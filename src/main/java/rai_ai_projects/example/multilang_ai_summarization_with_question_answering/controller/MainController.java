@@ -2,6 +2,7 @@ package rai_ai_projects.example.multilang_ai_summarization_with_question_answeri
 
 import rai_ai_projects.example.multilang_ai_summarization_with_question_answering.dto.TranslationDTO;
 import rai_ai_projects.example.multilang_ai_summarization_with_question_answering.service.LanguageDetectionService;
+import rai_ai_projects.example.multilang_ai_summarization_with_question_answering.service.LanguageSummaryService;
 import rai_ai_projects.example.multilang_ai_summarization_with_question_answering.service.LanguageTranslateService;
 
 import java.util.Map;
@@ -13,55 +14,48 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MainController {
-    public class TranslationRequest {
-        private String text;
-        private String targetLang;
-
-        // Getters and setters
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public String getTargetLang() {
-            return targetLang;
-        }
-
-        public void setTargetLang(String targetLang) {
-            this.targetLang = targetLang;
-        }
-
-    }
 
     String textWord;
     private final LanguageDetectionService languageDetectionService;
     private final LanguageTranslateService languageTranslateService;
+    private final LanguageSummaryService languageSummaryService;
 
     @Autowired
     public MainController(LanguageDetectionService languageDetectionService,
-            LanguageTranslateService languageTranslateService) {
+            LanguageTranslateService languageTranslateService, LanguageSummaryService languageSummaryService) {
         this.languageDetectionService = languageDetectionService;
         this.languageTranslateService = languageTranslateService;
+        this.languageSummaryService = languageSummaryService;
     }
 
-    @PostMapping("/translate-language")
+    @PostMapping("/summarize")
     public Map<String, Object> detectLanguage(@RequestBody TranslationDTO req) {
         String text = req.text;
-        String targetLang = req.targetLang;
 
         Map<String, Object> detectLang = languageDetectionService.detectLanguage(text);
 
-        if (detectLang != null) {
-            String detectedLanguage = (String) detectLang.get("detectedLanguage");
-
-            return languageTranslateService.translateLanguage(text, detectedLanguage,
-                    targetLang);
-
+        String detectedLanguage = (String) detectLang.get("detectedLanguage");
+        System.out.println("Detected language: " + detectedLanguage);
+        // If the detected language is English, return the original text
+        if (text != null && detectedLanguage.equals("en")) {
+            Map<String, Object> summarize = languageSummaryService.summarizeLanguage(text);
+            return summarize;
+        } else {
+            // translation
+            Map<String, Object> translation = languageTranslateService.translateLanguage(text, detectedLanguage);
+            // summary
+            // Map<String, Object> summarize =
+            // languageSummaryService.summarizeLanguage((String)
+            // translation.get("translation"));
+            String translatedText = (String) translation.get("translation");
+            // System.out.println("Translation: " + translation.get("translation"));
+            if (translatedText != null) {
+                Map<String, Object> summarize = languageSummaryService.summarizeLanguage(translatedText);
+                return summarize;
+            }
+            return null;
         }
-        return null;
+
     }
 
 }

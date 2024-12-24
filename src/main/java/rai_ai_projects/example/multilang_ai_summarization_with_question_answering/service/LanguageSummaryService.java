@@ -14,23 +14,22 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class LanguageTranslateService {
-
+public class LanguageSummaryService {
     public final RestTemplate restTemplate = new RestTemplate();
 
-    public Map<String, Object> translateLanguage(String text, String sourceLanguage) {
-        String url = "http://127.0.0.1:8000/translate";
+    // TODO: Implement logic for summarizing text based on language
+    public Map<String, Object> summarizeLanguage(String text) {
+        String url = "http://localhost:9000/summarize";
 
-        // Correct HttpHeaders import
+        // Setup headers
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
 
-        Map<String, String> requestPayload = Map.of(
-                "text", text,
-                "source_lang", sourceLanguage,
-                "target_lang", "en");
-
+        // Placeholder for the request payload
+        Map<String, String> requestPayload = Map.of("text", text);
+        // Create a new HTTP entity with the request payload and headers
         HttpEntity<Map<String, String>> request = new HttpEntity<>(requestPayload, headers);
+        // Send the HTTP request and receive the response
 
         try {
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
